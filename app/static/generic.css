@@ -434,6 +434,18 @@ footer {
   color: black;
 }
 
+.form-container {
+    display: flex; /* Use flex display to make the forms side by side */
+    justify-content: space-around; /* Adjust as needed */
+    align-items: center; /* Center vertically within the container */
+}
+
+
+.side-by-side {
+    display: inline-block;
+    margin-right: 30px;
+}
+
 textarea[disabled],
 select[disabled],
 input[disabled],

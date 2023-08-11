@@ -16,6 +16,20 @@
 
 <h4>Your Top 15 Most Streamed Artists of the Past 6 Months</h4>
 
+<div class="form-container">
+<form method="POST">
+    {{ form.hidden_tag() }} <!-- Include CSRF token and hidden fields -->
+    <div class="side-by-side">
+        {{ form.dd_number.label }}
+        {{ form.dd_number }}
+    </div>
+    <div class="side-by-side">
+        {{ form.dd_time_frame.label }}
+        {{ form.dd_time_frame }}
+    </div>
+    <button type="submit">Submit</button>
+</form>
+</div>
 <ol>
 {% for artist in artists %}
         <li>  <h5>{{ artist }}</h5> <img src="{{ img_infos[artist]['url'] }}" width="320" height="320"> </li>
