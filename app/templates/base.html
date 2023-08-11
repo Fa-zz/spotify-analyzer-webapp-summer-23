@@ -2,10 +2,27 @@
 <head>
     {% block head %}
     <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='generic.css') }}">
     {% endblock %}
 </head>
 <body>
-    {% block body %}
-    {% endblock %}
+
+<!--    <header>-->
+<!--        <nav>-->
+<!--            <ul>-->
+<!--                <li><p>Log In</p></li>-->
+<!--            </ul>-->
+<!--        </nav>-->
+<!--    </header>-->
+
+    <main>
+        {% block body %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        {% block footer %}
+        {% endblock %}
+    </footer>
 </body>
 </html>

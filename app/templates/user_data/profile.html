@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}User Profile{% endblock %}
+
+{% block body %}
+<h1>Hello, {{ usr }} 😎 </h1>
+<h3>
+    {% if followers == 0 %}
+    You have no followers yet
+    {% elif followers == 1 %}
+    You have 1 follower
+    {% else %}
+    Congrats on the {{ followers }} followers!
+    {% endif %}
+</h3>
+<br>
+
+<h4>Your Top 15 Most Streamed Artists of the Past 6 Months</h4>
+
+<ol>
+{% for artist in artists %}
+        <li>  <h5>{{ artist }}</h5> <img src="{{ img_infos[artist]['url'] }}" width="320" height="320"> </li>
+<!--<p>Welcome to the Analyzer tool. Let's analyze your music.</p>-->
+{% endfor %}
+</ol>
+{% endblock %}
+
+{% block footer %}
+<p><small>Source code for this project can be found <a href="https://github.com/Fa-zz/spotify-analyzer-webapp-summer-23" target="_blank">here</a>.</small></p>
+{% endblock %}
