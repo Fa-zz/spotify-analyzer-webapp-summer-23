@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+
+{% block body %}
+<h1>Spotify Analyzer!</h1>
+<p>Welcome to the Analyzer tool. Let's analyze your music.</p>
+<p>You can <a href="{{ url_for('user_data.login') }}">log in</a> into Spotify and we'll take a look at your music habits.</p>
+<p><small>Source code can be found <a href="https://github.com/Fa-zz/spotify-analyzer-webapp-summer-23" target="_blank">here</a>.</small></p>
+{% endblock %}
