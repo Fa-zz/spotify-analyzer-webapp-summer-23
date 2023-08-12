@@ -50,6 +50,6 @@ app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 # }
 #
 # response = requests.get(api_url, headers=headers)
-# user_data = response.json()
+# userdata = response.json()
 #
-# print("User's Spotify display name:", user_data.get('display_name'))
+# print("User's Spotify display name:", userdata.get('display_name'))

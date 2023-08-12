@@ -1,7 +1,23 @@
 import requests
 from flask import redirect, request, session, url_for, render_template, current_app
-from .forms import DropdownForm, DD_NUMBER_CHOICES, DD_TIME_FRAME_CHOICES
+from .forms import DropdownForm, DD_TYPE_CHOICES, DD_NUMBER_CHOICES, DD_TIME_FRAME_CHOICES
 from . import user_data
+
+
+def top_tracks_data_clean(data):
+    track_names = []
+    popularities = []
+    artist_names = []
+    image_info = []
+
+    for item in data['items']:
+        track_names.append(item['name'])
+        popularities.append(item['popularity'])
+        artist_names.append(item['album']['artists'][0]['name'])
+        image_info.append(item['album']['images'][2]['url'])
+    print(f"IMAGE INFO: {image_info}")
+
+    return track_names, popularities, artist_names, image_info
 
 
 def top_artist_data_clean(data):
@@ -13,7 +29,7 @@ def top_artist_data_clean(data):
     return names, image_info
 
 
-def get_data(top_artist, number_disp, time_frame):
+def get_data(type, number_disp, time_frame):
     access_token = session.get('access_token')
     if access_token:
         headers = {'Authorization': f'Bearer {access_token}'}
@@ -29,31 +45,34 @@ def get_data(top_artist, number_disp, time_frame):
     else:
         return False
 
-    if top_artist:
-        finding = 'artists'
-    else:
-        finding = 'tracks'
+    type = type.lower()
 
-    data_request_url = f'https://api.spotify.com/v1/me/top/{finding}?time_range={time}&limit={number_disp}&offset=0'
-
-    # short_15_top_artist = requests.get(
-    # 'https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=15&offset=0', headers=headers).json()
+    data_request_url = f'https://api.spotify.com/v1/me/top/{type}?time_range={time}&limit={number_disp}&offset=0'
 
     info = requests.get(
         data_request_url, headers=headers).json()
     user_info = requests.get(
         'https://api.spotify.com/v1/me', headers=headers).json()
 
-    if finding == 'tracks':
-        print(info)
-
-    artist_names, artist_img_infos = top_artist_data_clean(info)
+    print(type, info)
 
     session['user_name'] = user_info['display_name']
     session['followers'] = user_info['followers']['total']
+    if type == 'artists':
+        session['artists'], \
+        session['artist_img_infos'] \
+            = top_artist_data_clean(info)
+        session['track_names'] = ''
+        session['track_popularities'] = ''
+        session['artist_names'] = ''
+        session['image_info'] = ''
 
-    session['artists'] = artist_names
-    session['artist_img_infos'] = artist_img_infos
+    elif type == 'tracks':
+        session['track_names'], \
+        session['track_popularities'], \
+        session['artist_names'], \
+        session['image_info'] \
+            = top_tracks_data_clean(info)
 
     return True
 
@@ -62,30 +81,39 @@ def get_data(top_artist, number_disp, time_frame):
 def profile():
     my_form = DropdownForm()
     if my_form.validate_on_submit():
+        type = my_form.get_choice_label(DD_TYPE_CHOICES, my_form.dd_type.data)
         number_disp = int(my_form.get_choice_label(DD_NUMBER_CHOICES, my_form.dd_number.data))
         time_frame = my_form.get_choice_label(DD_TIME_FRAME_CHOICES, my_form.dd_time_frame.data)
         print(f'Number to display: {number_disp}')
         print(f'Time frame: {time_frame}')
     else:
         print("Form did not submit")
+        type = "Artists"
         number_disp = int(5)
         time_frame = "Four weeks"
-    top_artist = True
 
-    got_data = get_data(top_artist, number_disp, time_frame)
+    got_data = get_data(type, number_disp, time_frame)
 
     if time_frame != "All time":
         time_frame = " the Past " + time_frame
 
-    string = f"Your Top {number_disp} Most Streamed Artists of {time_frame}"
+    string = f"Your Top {number_disp} Most Streamed {type} of {time_frame}"
 
     if got_data:
-        return render_template('user_data/profile.html',
+        return render_template('userdata/profile.html',
                                form=my_form,
                                string=string,
+                               type=type,
                                usr=session['user_name'],
                                followers=session['followers'],
+
                                artists=session['artists'][:number_disp],
-                               img_infos=session['artist_img_infos'])
+                               img_infos=session['artist_img_infos'],
+
+                               track_names=session['track_names'][:number_disp],
+                               popularities=session['track_popularities'][:number_disp],
+                               artist_names=session['artist_names'][:number_disp],
+                               image_info=session['image_info']
+                            )
     else:
         return 'You are not logged in.'

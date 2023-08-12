@@ -41,4 +41,4 @@ def callback():
     # Store access_token in session or database
     session['access_token'] = access_token
 
-    return redirect(url_for('user_data.profile'))
+    return redirect(url_for('userdata.profile'))
