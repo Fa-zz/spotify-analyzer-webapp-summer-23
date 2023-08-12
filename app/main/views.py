@@ -6,6 +6,7 @@ from . import main
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
+    session.clear()
     return render_template('index.html')
 
 
@@ -34,6 +35,8 @@ def callback():
     response = requests.post(current_app.config['TOKEN_URL'], data=token_params)
     token_data = response.json()
     access_token = token_data.get('access_token')
+
+    assert access_token
 
     # Store access_token in session or database
     session['access_token'] = access_token

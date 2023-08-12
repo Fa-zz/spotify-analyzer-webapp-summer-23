@@ -14,7 +14,7 @@
 </h3>
 <br>
 
-<h4>Your Top 15 Most Streamed Artists of the Past 6 Months</h4>
+<h4>{{ string }}</h4>
 
 <div class="form-container">
 <form method="POST">
@@ -30,12 +30,19 @@
     <button type="submit">Submit</button>
 </form>
 </div>
-<ol>
-{% for artist in artists %}
-        <li>  <h5>{{ artist }}</h5> <img src="{{ img_infos[artist]['url'] }}" width="320" height="320"> </li>
-<!--<p>Welcome to the Analyzer tool. Let's analyze your music.</p>-->
-{% endfor %}
-</ol>
+
+<div class="side-by-side">
+    <ol>
+        {% for artist in artists %}
+            <li>
+                <div class="item-container">
+                    <img src="{{ img_infos[artist]['url'] }}" width="{{ img_infos[artist]['width'] }}" height="{{ img_infos[artist]['height'] }}">
+                    <h5>{{ artist }}</h5>
+                </div>
+            </li>
+        {% endfor %}
+    </ol>
+</div>
 {% endblock %}
 
 {% block footer %}

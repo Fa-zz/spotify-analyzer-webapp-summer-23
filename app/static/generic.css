@@ -446,6 +446,16 @@ footer {
     margin-right: 30px;
 }
 
+.item-container {
+    display: flex;
+    align-items: center;
+    margin-right: 15px; /* Add some space between item and text */
+ }
+
+ .item-container img {
+    margin-right: 30px; /* Add space between image and text */
+}
+
 textarea[disabled],
 select[disabled],
 input[disabled],
