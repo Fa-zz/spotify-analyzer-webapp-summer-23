@@ -1,8 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Index{% endblock %}
 
-{% block body %}
-<h1>Spotify Analyzer!</h1>
-<p>Welcome to the Analyzer tool. Let's analyze your music.</p>
-<p>You can <a href="{{ url_for('main.login') }}">log in</a> into Spotify and we'll take a look at your music habits.</p>
+{% block page_content %}
+    <h3>Welcome!</h3>
+    <p><a href="{{ auth_url }}">Log in</a> to Spotify and we'll take a look at your music habits.</p>
+    <small>(Not affiliated with Spotify!)</small>
 {% endblock %}
