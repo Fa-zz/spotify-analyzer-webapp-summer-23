@@ -1,9 +1,11 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
 {% block title %}User Profile{% endblock %}
 
-{% block body %}
+{% block page_content %}
 
-<h1>Hello, {{ usr }} 😎 </h1>
+<h1>Hello, {{ user }} 😎 </h1>
     <h3>
         {% if followers == 0 %}
         You have no followers yet
@@ -18,39 +20,38 @@
 
 <h4>{{ string }}</h4>
 
-<div class="form-container">
+<div class="container">
     <form method="POST">
-        {{ form.hidden_tag() }} <!-- Include CSRF token and hidden fields -->
-        <div class="side-by-side">
-            {{ form.dd_type.label }}
-            {{ form.dd_type }}
+        <div class="row">
+            <div class="col-md-4">
+                {{ form.dd_type.label }}
+                {{ form.dd_type(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.dd_time_frame.label }}
+                {{ form.dd_time_frame(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
         </div>
-        <div class="side-by-side">
-            {{ form.dd_number.label }}
-            {{ form.dd_number }}
-        </div>
-        <div class="side-by-side">
-            {{ form.dd_time_frame.label }}
-            {{ form.dd_time_frame }}
-        </div>
-        <button type="submit">Submit</button>
     </form>
 </div>
 
-{% if type == 'Artists' %}
+{% if type == 'artists' %}
     <div class="side-by-side">
         <ol>
             {% for artist in artists %}
                 <li>
                     <div class="item-container">
-                        <img src="{{ img_infos[artist]['url'] }}" width="64" height="64">
+                        <img src="{{ artist_imgs[artist] }}" width="64" height="64">
                         <h5>{{ artist }}</h5>
                     </div>
                 </li>
             {% endfor %}
         </ol>
     </div>
-{% elif type == 'Tracks' %}
+{% elif type == 'tracks' %}
     <div class="side-by-side">
         <ol>
             {% for track_name in track_names %}
