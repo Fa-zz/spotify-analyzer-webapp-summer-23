@@ -18,3 +18,18 @@
     display: inline-block;
     margin-right: 30px;
 }
+
+.artist-item {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    margin-right: 15px; /* Add some space between item and text */
+}
+
+.artist-item img {
+    margin-right: 30px; /* Add space between image and text */
+}
+
+.artist-item h5 {
+    font-size: 20px; /* Adjust the font size as needed */
+}

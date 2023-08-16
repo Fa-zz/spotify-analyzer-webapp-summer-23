@@ -38,31 +38,41 @@
     </form>
 </div>
 
-{% if type == 'artists' %}
-    <div class="side-by-side">
-        <ol>
-            {% for artist in artists %}
-                <li>
-                    <div class="item-container">
-                        <img src="{{ artist_imgs[artist] }}" width="64" height="64">
-                        <h5>{{ artist }}</h5>
+<br>
+
+<div class="container">
+    <div class="row">
+        {% if type == 'artists' %}
+            <div class="row">
+                {% for artist in artists %}
+                    <div class="col-md-4">
+                        <div class="artist-item">
+                            <img src="{{ artist_imgs[artist] }}" width="64" height="64">
+                            <h5>{{ loop.index }}. {{ artist }}</h5>
+                        </div>
                     </div>
-                </li>
-            {% endfor %}
-        </ol>
-    </div>
-{% elif type == 'tracks' %}
-    <div class="side-by-side">
-        <ol>
-            {% for track_name in track_names %}
-                <li>
-                    <div class="item-container">
-                        <img src="{{ image_info }}" width="64" height="64">
-                        <h5>{{ track_name }}</h5>
+                    {% if loop.index % 3 == 0 %}
+                        </div><div class="row">
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if type == 'tracks' %}
+            <div class="row">
+                {% for track in track_names %}
+                    <div class="col-md-4">
+                        <div class="artist-item">
+                            <img src="{{ track_imgs[track] }}" width="64" height="64">
+                            <h5>{{ loop.index }}. {{ track }}</h5>
+                        </div>
                     </div>
-                </li>
-            {% endfor %}
-        </ol>
+                    {% if loop.index % 3 == 0 %}
+                        </div><div class="row">
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
-{% endif %}
+</div>
 {% endblock %}

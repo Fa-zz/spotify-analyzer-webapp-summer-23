@@ -7,18 +7,16 @@ import spotipy
 
 def top_tracks_data_clean(data):
     track_names = []
-    popularities = []
-    artist_names = []
-    image_info = []
-
-    for item in data['items']:
-        track_names.append(item['name'])
-        popularities.append(item['popularity'])
-        artist_names.append(item['album']['artists'][0]['name'])
-        image_info.append(item['album']['images'][2]['url'])
-    print(f"IMAGE INFO: {image_info}")
-
-    return track_names, popularities, artist_names, image_info
+    artist_names = {}
+    img_urls = {}
+    pops = {}
+    for i, item in enumerate(data['items']):
+        name = item['name']
+        track_names.append(name)
+        artist_names[name] = item['artists'][0]['name']
+        img_urls[name] = item['album']['images'][2]['url']
+        pops[name] = item['popularity']
+    return track_names, artist_names, img_urls, pops
 
 
 def top_artist_data_clean(data):
@@ -26,9 +24,10 @@ def top_artist_data_clean(data):
     img_urls = {}
     pops = {}
     for i, item in enumerate(data['items']):
-        names.append(item['name'])
-        img_urls[item['name']] = item['images'][2]['url']
-        pops[item['name']] = item['popularity']
+        name = item['name']
+        names.append(name)
+        img_urls[name] = item['images'][2]['url']
+        pops[name] = item['popularity']
     return names, img_urls, pops
 
 
@@ -113,7 +112,8 @@ def profile():
     # got_data = get_data(type, number_disp, time_frame)
     artist_results = spotify.current_user_top_artists(time_range=range, limit=50)
     artist_names, artist_imgs, artist_pops = top_artist_data_clean(artist_results)
-
+    track_results = spotify.current_user_top_tracks(time_range=range, limit=50)
+    track_names, track_artist_names, track_imgs, track_pops = top_tracks_data_clean(track_results)
     string = f"Your Most Streamed {type.capitalize()} of {time_frame}"
     return render_template('userdata/profile.html',
                            form=my_form,
@@ -121,10 +121,16 @@ def profile():
                            type=type,
                            user=spotify.me()['display_name'],
                            followers=spotify.me()['followers']['total'],
+
                            artists=artist_names,
                            artist_imgs=artist_imgs,
-                           artist_pops=artist_pops
-                           )
+                           artist_pops=artist_pops,
+
+                           track_names=track_names,
+                           track_artist_names=track_artist_names,
+                           track_imgs=track_imgs,
+                           track_pops=track_pops,
+                        )
 
     # if got_data:
     #     return "hello"
