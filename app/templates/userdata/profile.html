@@ -64,11 +64,11 @@
 
         {% if type == 'tracks' %}
             <div class="row">
-                {% for track in track_names %}
+                {% for key, values in track_dict.items() %}
                     <div class="col-md-4">
                         <div class="artist-item">
-                            <img src="{{ track_imgs[track] }}" width="64" height="64">
-                            <h5>{{ loop.index }}. {{ track }}</h5>
+                            <img src="{{ values[-1] }}" width="64" height="64">
+                            <h5>{{ loop.index }}. {{ key }}</h5>
                         </div>
                     </div>
                     {% if loop.index % 3 == 0 %}
