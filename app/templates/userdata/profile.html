@@ -32,6 +32,10 @@
                 {{ form.dd_time_frame(class="form-control") }}
             </div>
             <div class="col-md-4">
+                {{ form.dd_sort.label }}
+                {{ form.dd_sort(class="form-control") }}
+            </div>
+            <div class="col-md-4">
                 <button type="submit" class="btn btn-primary">Submit</button>
             </div>
         </div>
@@ -44,11 +48,11 @@
     <div class="row">
         {% if type == 'artists' %}
             <div class="row">
-                {% for artist in artists %}
+                {% for key, values in artist_dict.items() %}
                     <div class="col-md-4">
                         <div class="artist-item">
-                            <img src="{{ artist_imgs[artist] }}" width="64" height="64">
-                            <h5>{{ loop.index }}. {{ artist }}</h5>
+                            <img src="{{ values[-1] }}" width="64" height="64">
+                            <h5>{{ loop.index }}. {{ key }}</h5>
                         </div>
                     </div>
                     {% if loop.index % 3 == 0 %}

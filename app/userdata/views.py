@@ -19,16 +19,24 @@ def top_tracks_data_clean(data):
     return track_names, artist_names, img_urls, pops
 
 
-def top_artist_data_clean(data):
+def top_artist_data_clean(data, sort_by):
+    # Find urls for artists only after sorting
     names = []
-    img_urls = {}
+    img_urls = []
     pops = {}
+    artist_dict = {}
     for i, item in enumerate(data['items']):
         name = item['name']
-        names.append(name)
-        img_urls[name] = item['images'][2]['url']
-        pops[name] = item['popularity']
-    return names, img_urls, pops
+        artist_dict[name] = [item['popularity']]
+        if sort_by == "popularity":
+            sorted_artist_dict = dict(sorted(artist_dict.items(), key=lambda item: item[1], reverse=True))
+        else:
+            sorted_artist_dict = artist_dict
+
+        sorted_artist_dict[name].append(item['images'][2]['url'])
+        # result_dict = {key: [value] for key, value in list_of_tuples}
+
+    return sorted_artist_dict
 
 
 # def get_data(type, number_disp, time_frame):
@@ -78,7 +86,8 @@ def top_artist_data_clean(data):
 
     # return True
 
-
+#TODO: Hover link to spotify
+#TODO: For artists you can sort by popularity, # albums, and possibly audio features?. For tracks you can sort by popularity, release date, audio features
 @userdata.route('/profile', methods=['GET', 'POST'])
 def profile():
     cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
@@ -90,18 +99,20 @@ def profile():
     my_form = DropdownForm()
     if my_form.is_submitted():
         type = my_form.dd_type.data
-        range = my_form.dd_time_frame.data
-        print(type, range)
+        range_to_get = my_form.dd_time_frame.data
+        sort_by = my_form.dd_sort.data
+        print(type, range_to_get, sort_by)
     else:
         print("Form did not submit")
         type = "Artists"
-        range = "short_term"
+        range_to_get = "short_term"
+        sort_by = "unsorted"
 
-    if range == 'short_term':
+    if range_to_get == 'short_term':
         time_frame = 'Four Weeks'
-    elif range == 'medium_term':
+    elif range_to_get == 'medium_term':
         time_frame = 'Six Months'
-    elif range == 'long_term':
+    elif range_to_get == 'long_term':
         time_frame = 'All time'
     else:
         time_frame = 'short_term'
@@ -109,12 +120,19 @@ def profile():
     if time_frame != "All time":
         time_frame = " the Past " + time_frame
 
-    # got_data = get_data(type, number_disp, time_frame)
-    artist_results = spotify.current_user_top_artists(time_range=range, limit=50)
-    artist_names, artist_imgs, artist_pops = top_artist_data_clean(artist_results)
-    track_results = spotify.current_user_top_tracks(time_range=range, limit=50)
+    string = ""
+
+    artist_results = spotify.current_user_top_artists(time_range=range_to_get, limit=50)
+    sorted_artist_dict = top_artist_data_clean(artist_results, sort_by)
+    track_results = spotify.current_user_top_tracks(time_range=range_to_get, limit=50)
     track_names, track_artist_names, track_imgs, track_pops = top_tracks_data_clean(track_results)
-    string = f"Your Most Streamed {type.capitalize()} of {time_frame}"
+    string = f"Your Most Streamed {type.capitalize()} of {time_frame}."
+
+    if sort_by == "unsorted":
+        string = string + f" Sorted by Listens"
+    else:
+        string = string + f" Sorted by {sort_by.capitalize()}"
+
     return render_template('userdata/profile.html',
                            form=my_form,
                            string=string,
@@ -122,9 +140,7 @@ def profile():
                            user=spotify.me()['display_name'],
                            followers=spotify.me()['followers']['total'],
 
-                           artists=artist_names,
-                           artist_imgs=artist_imgs,
-                           artist_pops=artist_pops,
+                           artist_dict=sorted_artist_dict,
 
                            track_names=track_names,
                            track_artist_names=track_artist_names,
@@ -132,22 +148,3 @@ def profile():
                            track_pops=track_pops,
                         )
 
-    # if got_data:
-    #     return "hello"
-    #     # return render_template('userdata/profile.html',
-    #     #                        form=my_form,
-    #     #                        string=string,
-    #     #                        type=type,
-    #     #                        usr=session['user_name'],
-    #     #                        followers=session['followers'],
-    #     #
-    #     #                        artists=session['artists'][:number_disp],
-    #     #                        img_infos=session['artist_img_infos'],
-    #     #
-    #     #                        track_names=session['track_names'][:number_disp],
-    #     #                        popularities=session['track_popularities'][:number_disp],
-    #     #                        artist_names=session['artist_names'][:number_disp],
-    #     #                        image_info=session['image_info']
-    #     #                     )
-    # else:
-    #     return 'You are not logged in.'
