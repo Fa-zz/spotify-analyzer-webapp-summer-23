@@ -52,7 +52,7 @@
                     <div class="col-md-4">
                         <div class="artist-item">
                             <img src="{{ values[-1] }}" width="64" height="64">
-                            <h5>{{ loop.index }}. {{ key }}</h5>
+                            <h5>{{ loop.index }}.<a href="{{ values[-2] }}" target="_blank" title="Opens Spotify in a new tab"> {{ key }}</a></h5>
                         </div>
                     </div>
                     {% if loop.index % 3 == 0 %}
@@ -68,7 +68,7 @@
                     <div class="col-md-4">
                         <div class="artist-item">
                             <img src="{{ values[-1] }}" width="64" height="64">
-                            <h5>{{ loop.index }}. {{ key }}</h5>
+                            <h5>{{ loop.index }}.<a href="{{ values[-2] }}" target="_blank" title="Opens Spotify in a new tab"> {{ key }}</a></h5>
                         </div>
                     </div>
                     {% if loop.index % 3 == 0 %}

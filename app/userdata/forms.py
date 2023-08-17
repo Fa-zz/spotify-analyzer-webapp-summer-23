@@ -3,7 +3,7 @@ from wtforms import SelectField
 DD_TYPE_CHOICES = [('artists', 'Artists'), ('tracks', 'Tracks')]
 # DD_NUMBER_CHOICES = [('disp_5', '5'), ('disp_10', '10'), ('disp_15', '15')]
 DD_TIME_FRAME_CHOICES = [('short_term', 'Four weeks'), ('medium_term', 'Six months'), ('long_term', 'All time')]
-DD_SORT_CHOICES = [('unsorted', 'Unsorted'), ('popularity', 'Popularity')]
+DD_SORT_CHOICES = [('your listens', 'Listens'), ('popularity', 'Popularity')]
 
 class DropdownForm(FlaskForm):
     dd_type = SelectField('Type', choices=DD_TYPE_CHOICES)

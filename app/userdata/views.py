@@ -17,6 +17,7 @@ def top_tracks_data_clean(data, sort_by):
         else:
             sorted_track_dict = track_dict
 
+        sorted_track_dict[track_name].append(item['external_urls']['spotify'])
         sorted_track_dict[track_name].append(item['album']['images'][2]['url'])
 
     return sorted_track_dict
@@ -33,14 +34,14 @@ def top_artist_data_clean(data, sort_by):
         else:
             sorted_artist_dict = artist_dict
 
+        sorted_artist_dict[name].append(item['external_urls']['spotify'])
         sorted_artist_dict[name].append(item['images'][2]['url'])
 
     return sorted_artist_dict
 
 
-
-#TODO: Hover link to spotify
-#TODO: For artists you can sort by popularity, # albums, and possibly audio features?. For tracks you can sort by popularity, release date, audio features
+# TODO: Hover link to spotify
+# TODO: For artists you can sort by popularity, # albums, and possibly audio features?. For tracks you can sort by popularity, release date, audio features
 @userdata.route('/profile', methods=['GET', 'POST'])
 def profile():
     cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
@@ -59,7 +60,7 @@ def profile():
         print("Form did not submit")
         type = "Artists"
         range_to_get = "short_term"
-        sort_by = "unsorted"
+        sort_by = "your listens"
 
     if range_to_get == 'short_term':
         time_frame = 'Four Weeks'
@@ -73,18 +74,22 @@ def profile():
     if time_frame != "All time":
         time_frame = " the Past " + time_frame
 
-    string = ""
-
     artist_results = spotify.current_user_top_artists(time_range=range_to_get, limit=50)
     sorted_artist_dict = top_artist_data_clean(artist_results, sort_by)
     track_results = spotify.current_user_top_tracks(time_range=range_to_get, limit=50)
     sorted_track_dict = top_tracks_data_clean(track_results, sort_by)
-    string = f"Your Most Streamed {type.capitalize()} of {time_frame}."
 
-    if sort_by == "unsorted":
-        string = string + f" Sorted by Your Listens"
-    else:
-        string = string + f" Sorted by {sort_by.capitalize()}"
+    string = 'Feel free to customize the settings, then hit Submit.'
+    if request.method == 'GET':
+        string = string
+    elif request.method == 'POST':
+        string = f"Your Most Streamed {type.capitalize()} of {time_frame}."
+
+        if sort_by == "unsorted":
+            string = string + f" Sorted by Your Listens."
+        else:
+            string = string + f" Sorted by {sort_by.capitalize()}."
+        string = string + " Hover for a link to Spotify"
 
     return render_template('userdata/profile.html',
                            form=my_form,
@@ -95,5 +100,4 @@ def profile():
 
                            artist_dict=sorted_artist_dict,
                            track_dict=sorted_track_dict
-                        )
-
+                           )
