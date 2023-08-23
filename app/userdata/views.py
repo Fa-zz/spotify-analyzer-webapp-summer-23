@@ -1,9 +1,19 @@
-import requests
-from flask import redirect, request, session, url_for, render_template, current_app
-from .forms import DropdownForm, DD_TYPE_CHOICES, DD_TIME_FRAME_CHOICES
+from flask import redirect, request, session, url_for, render_template, jsonify
+from .forms import DropdownForm
 from . import userdata
 import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
 
+def split_into_lists(sortedDict):
+    item_list = []
+    img_list = []
+    url_list = []
+    for key, values in sortedDict.items():
+        item_list.append(key)
+        img_list.append(values[-1])
+        url_list.append(values[-2])
+
+    return item_list, img_list, url_list
 
 def top_tracks_data_clean(data, sort_by):
     track_dict = {}
@@ -44,60 +54,73 @@ def top_artist_data_clean(data, sort_by):
 # TODO: For artists you can sort by popularity, # albums, and possibly audio features?. For tracks you can sort by popularity, release date, audio features
 @userdata.route('/profile', methods=['GET', 'POST'])
 def profile():
+    client_credentials_manager = SpotifyClientCredentials()
     cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         return redirect('/')
-    spotify = spotipy.Spotify(auth_manager=auth_manager)
+    spotify = spotipy.Spotify(auth_manager=auth_manager, client_credentials_manager=client_credentials_manager)
 
     my_form = DropdownForm()
-    if my_form.is_submitted():
-        type = my_form.dd_type.data
-        range_to_get = my_form.dd_time_frame.data
-        sort_by = my_form.dd_sort.data
-        print(type, range_to_get, sort_by)
+
+    if request.method == 'POST':
+        selected_dd_type = request.form.get('dd_type')
+        selected_dd_time_frame = request.form.get('dd_time_frame')
+        selected_dd_sort = request.form.get('dd_sort')
+
+        if selected_dd_time_frame == 'short_term':
+            time_frame = 'Four Weeks'
+        elif selected_dd_time_frame == 'medium_term':
+            time_frame = 'Six Months'
+        elif selected_dd_time_frame == 'long_term':
+            time_frame = 'All time'
+        else:
+            time_frame = 'short_term'
+
+        if time_frame != "All time":
+            time_frame = " the Past " + time_frame
+
+        if selected_dd_type == 'artists':
+            artist_results = spotify.current_user_top_artists(time_range=selected_dd_time_frame, limit=50)
+            sortedDict = top_artist_data_clean(artist_results, selected_dd_sort)
+        else:
+            track_results = spotify.current_user_top_tracks(time_range=selected_dd_time_frame, limit=50)
+            sortedDict = top_tracks_data_clean(track_results, selected_dd_sort)
+
+        itemList, imgList, urlList = split_into_lists(sortedDict)
+
+        # Prepare string
+        string = f"Your Most Streamed {selected_dd_type.capitalize()} of {time_frame}."
+        if selected_dd_sort == "unsorted":
+            string += " Sorted by Your Listens."
+        else:
+            string += f" Sorted by {selected_dd_sort.capitalize()}."
+        string += " Hover for a link to Spotify"
+
+        display = True
+
+        response_data = {
+            'string': string,
+            'selected_dd_type': selected_dd_type,
+            'selected_dd_time_frame': selected_dd_time_frame,
+            'selected_dd_sort': selected_dd_sort,
+            'display': display,
+            'itemList': itemList,
+            'imgList': imgList,
+            'urlList': urlList
+        }
+
+        return jsonify(response_data)
     else:
         print("Form did not submit")
-        type = "Artists"
-        range_to_get = "short_term"
-        sort_by = "your listens"
+        string = 'Feel free to customize the settings, then hit Submit.'
+        display = False
 
-    if range_to_get == 'short_term':
-        time_frame = 'Four Weeks'
-    elif range_to_get == 'medium_term':
-        time_frame = 'Six Months'
-    elif range_to_get == 'long_term':
-        time_frame = 'All time'
-    else:
-        time_frame = 'short_term'
-
-    if time_frame != "All time":
-        time_frame = " the Past " + time_frame
-
-    artist_results = spotify.current_user_top_artists(time_range=range_to_get, limit=50)
-    sorted_artist_dict = top_artist_data_clean(artist_results, sort_by)
-    track_results = spotify.current_user_top_tracks(time_range=range_to_get, limit=50)
-    sorted_track_dict = top_tracks_data_clean(track_results, sort_by)
-
-    string = 'Feel free to customize the settings, then hit Submit.'
-    if request.method == 'GET':
-        string = string
-    elif request.method == 'POST':
-        string = f"Your Most Streamed {type.capitalize()} of {time_frame}."
-
-        if sort_by == "unsorted":
-            string = string + f" Sorted by Your Listens."
-        else:
-            string = string + f" Sorted by {sort_by.capitalize()}."
-        string = string + " Hover for a link to Spotify"
-
-    return render_template('userdata/profile.html',
-                           form=my_form,
-                           string=string,
-                           type=type,
-                           user=spotify.me()['display_name'],
-                           followers=spotify.me()['followers']['total'],
-
-                           artist_dict=sorted_artist_dict,
-                           track_dict=sorted_track_dict
-                           )
+        return render_template('userdata/profile.html',
+                               form=my_form,
+                               string=string,
+                               type=type,
+                               user=spotify.me()['display_name'],
+                               followers=spotify.me()['followers']['total'],
+                               display=display
+                               )

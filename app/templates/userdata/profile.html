@@ -17,58 +17,38 @@
     </h3>
 
 <br>
-
-<h4>{{ string }}</h4>
+<h3 id="result">{{ string }}</h3>
+<br>
 
 <div class="container">
-    <form method="POST">
+    <form method="POST" id="user-form">
         <div class="row">
             <div class="col-md-4">
                 {{ form.dd_type.label }}
-                {{ form.dd_type(class="form-control") }}
+                {{ form.dd_type(class="form-control", id="dd-type") }}
             </div>
             <div class="col-md-4">
                 {{ form.dd_time_frame.label }}
-                {{ form.dd_time_frame(class="form-control") }}
+                {{ form.dd_time_frame(class="form-control", id="dd-time-frame") }}
             </div>
             <div class="col-md-4">
                 {{ form.dd_sort.label }}
-                {{ form.dd_sort(class="form-control") }}
-            </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-primary">Submit</button>
+                {{ form.dd_sort(class="form-control", id="dd-sort") }}
             </div>
         </div>
     </form>
 </div>
 
 <br>
-
 <div class="container">
     <div class="row">
-        {% if type == 'artists' %}
+        {% if display %}
             <div class="row">
-                {% for key, values in artist_dict.items() %}
+                {% for i in range(itemList|length) %}
                     <div class="col-md-4">
                         <div class="artist-item">
-                            <img src="{{ values[-1] }}" width="64" height="64">
-                            <h5>{{ loop.index }}.<a href="{{ values[-2] }}" target="_blank" title="Opens Spotify in a new tab"> {{ key }}</a></h5>
-                        </div>
-                    </div>
-                    {% if loop.index % 3 == 0 %}
-                        </div><div class="row">
-                    {% endif %}
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        {% if type == 'tracks' %}
-            <div class="row">
-                {% for key, values in track_dict.items() %}
-                    <div class="col-md-4">
-                        <div class="artist-item">
-                            <img src="{{ values[-1] }}" width="64" height="64">
-                            <h5>{{ loop.index }}.<a href="{{ values[-2] }}" target="_blank" title="Opens Spotify in a new tab"> {{ key }}</a></h5>
+                            <img src="{{ imgList[i] }}" width="64" height="64">
+                            <h5>{{ loop.index }}.<a href="{{ urlList[i] }}" target="_blank" title="Opens Spotify in a new tab"> {{ itemList[i] }}</a></h5>
                         </div>
                     </div>
                     {% if loop.index % 3 == 0 %}
@@ -79,4 +59,43 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    $(document).ready(function() {
+        $('#dd-type, #dd-time-frame, #dd-sort').change(function() {
+            const ddType = $('#dd-type').val();
+            const ddTimeFrame = $('#dd-time-frame').val();
+            const ddSort = $('#dd-sort').val();
+
+            $.ajax({
+                url: '{{ url_for('userdata.profile') }}',  // Update this URL to your route
+                method: 'POST',
+                data: {
+                    dd_type: ddType,
+                    dd_time_frame: ddTimeFrame,
+                    dd_sort: ddSort
+                },
+            success: function(data) {
+                $('#result').html(data.string);
+                $('#selected-dd-type').html(data.selected_dd_type);  // Display selected values
+                $('#selected-dd-time-frame').html(data.selected_dd_time_frame);
+                $('#selected-dd-sort').html(data.selected_dd_sort);
+
+                var display = data.display;
+                var itemList = data.itemList;
+                var imgList = data.imgList;
+                var urlList = data.urlList;
+                console.log(display);
+                console.log(itemList, imgList, urlList);
+            },
+            error: function(error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}
