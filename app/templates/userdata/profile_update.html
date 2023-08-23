@@ -7,11 +7,11 @@
 <div class="container">
     <div class="row">
         <div class="row">
-            {% for i in range(itemList|length) %}
+            {% for i in range(item_list|length) %}
                 <div class="col-md-4">
                     <div class="artist-item">
-                        <img src="{{ imgList[i] }}" width="64" height="64">
-                        <h5>{{ loop.index }}.<a href="{{ urlList[i] }}" target="_blank" title="Opens Spotify in a new tab"> {{ itemList[i] }}</a></h5>
+                        <img src="{{ img_list[i] }}" width="64" height="64">
+                        <h5>{{ loop.index }}.<a href="{{ url_list[i] }}" target="_blank" title="Opens Spotify in a new tab"> {{ item_list[i] }}</a></h5>
                     </div>
                 </div>
                 {% if loop.index % 3 == 0 %}

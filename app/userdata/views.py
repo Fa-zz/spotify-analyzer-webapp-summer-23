@@ -4,54 +4,53 @@ from . import userdata
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
-def split_into_lists(sortedDict):
+
+def split_into_lists(full_list):
     item_list = []
     img_list = []
     url_list = []
-    for key, values in sortedDict.items():
-        item_list.append(key)
-        img_list.append(values[-1])
-        url_list.append(values[-2])
+    for artist in full_list:
+        name = artist['name']
+        spotify_url = artist['spotify_url']
+        img_url = artist['img_url']
+
+        item_list.append(name)
+        img_list.append(img_url)
+        url_list.append(spotify_url)
 
     return item_list, img_list, url_list
 
-def top_tracks_data_clean(data, sort_by):
-    track_dict = {}
-    sorted_track_dict = {}
-    for i, item in enumerate(data['items']):
-        track_name = item['name']
-        track_dict[track_name] = [item['artists'][0]['name']]
-        track_dict[track_name].append(item['popularity'])
-        if sort_by == "popularity":
-            sorted_track_dict = dict(sorted(track_dict.items(), key=lambda item: item[1][1], reverse=True))
-        else:
-            sorted_track_dict = track_dict
 
-        sorted_track_dict[track_name].append(item['external_urls']['spotify'])
-        sorted_track_dict[track_name].append(item['album']['images'][2]['url'])
+def top_data_clean(data, sort_by, type):
+    full_list = []
+    if type == 'artists':
+        for i, item in enumerate(data['items']):
+            name = item['name']
+            artist_dict = {'name': name,
+                           'popularity': item['popularity'],
+                           'spotify_url': item['external_urls']['spotify'],
+                           'img_url': item['images'][2]['url']
+                           }
+            full_list.append(artist_dict)
 
-    return sorted_track_dict
+    elif type == 'tracks':
+        for i, item in enumerate(data['items']):
+            track_name = item['name']
+            track_dict = {'name': track_name,
+                          'artist_name': item['artists'][0]['name'],
+                          'popularity': item['popularity'],
+                          'spotify_url': item['external_urls']['spotify'],
+                          'img_url': item['album']['images'][2]['url']
+                          }
+            full_list.append(track_dict)
 
+    if sort_by == "popularity":
+        # Sort the list of dictionaries by 'popularity' in descending order
+        full_list = sorted(full_list, key=lambda x: x['popularity'], reverse=True)
 
-def top_artist_data_clean(data, sort_by):
-    artist_dict = {}
-    sorted_artist_dict = {}
-    for i, item in enumerate(data['items']):
-        name = item['name']
-        artist_dict[name] = [item['popularity']]
-        if sort_by == "popularity":
-            sorted_artist_dict = dict(sorted(artist_dict.items(), key=lambda item: item[1], reverse=True))
-        else:
-            sorted_artist_dict = artist_dict
-
-        sorted_artist_dict[name].append(item['external_urls']['spotify'])
-        sorted_artist_dict[name].append(item['images'][2]['url'])
-
-    return sorted_artist_dict
+    return full_list
 
 
-# TODO: Hover link to spotify
-# TODO: For artists you can sort by popularity, # albums, and possibly audio features?. For tracks you can sort by popularity, release date, audio features
 @userdata.route('/profile', methods=['GET', 'POST'])
 def profile():
     client_credentials_manager = SpotifyClientCredentials()
@@ -64,7 +63,8 @@ def profile():
     my_form = DropdownForm()
 
     if request.method == 'POST' and \
-            ('none' not in request.form.get('dd_type') and 'none' not in request.form.get('dd_time_frame') and 'none' not in request.form.get('dd_sort')):
+            ('none' not in request.form.get('dd_type') and 'none' not in request.form.get(
+                'dd_time_frame') and 'none' not in request.form.get('dd_sort')):
         selected_dd_type = request.form.get('dd_type')
         selected_dd_time_frame = request.form.get('dd_time_frame')
         selected_dd_sort = request.form.get('dd_sort')
@@ -82,13 +82,14 @@ def profile():
             time_frame = " the Past " + time_frame
 
         if selected_dd_type == 'artists':
-            artist_results = spotify.current_user_top_artists(time_range=selected_dd_time_frame, limit=50)
-            sortedDict = top_artist_data_clean(artist_results, selected_dd_sort)
+            results = spotify.current_user_top_artists(time_range=selected_dd_time_frame, limit=50)
         else:
-            track_results = spotify.current_user_top_tracks(time_range=selected_dd_time_frame, limit=50)
-            sortedDict = top_tracks_data_clean(track_results, selected_dd_sort)
+            results = spotify.current_user_top_tracks(time_range=selected_dd_time_frame, limit=50)
 
-        itemList, imgList, urlList = split_into_lists(sortedDict)
+        full_list = top_data_clean(results, selected_dd_sort, selected_dd_type)
+
+        print(full_list)  # Obtains each artist
+        item_list, img_list, url_list = split_into_lists(full_list)
 
         # Prepare string
         string = f"Your Most Streamed {selected_dd_type.capitalize()} of {time_frame}."
@@ -99,10 +100,10 @@ def profile():
         string += " Hover for a link to Spotify"
 
         content = render_template('userdata/profile_update.html',
-                               string=string,
-                               itemList=itemList,
-                               imgList=imgList,
-                               urlList=urlList)
+                                  string=string,
+                                  item_list=item_list,
+                                  img_list=img_list,
+                                  url_list=url_list)
         return jsonify({'content': content})
     else:
         print("Form did not submit")
