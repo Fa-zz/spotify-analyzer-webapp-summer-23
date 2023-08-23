@@ -63,7 +63,8 @@ def profile():
 
     my_form = DropdownForm()
 
-    if request.method == 'POST':
+    if request.method == 'POST' and \
+            ('none' not in request.form.get('dd_type') and 'none' not in request.form.get('dd_time_frame') and 'none' not in request.form.get('dd_sort')):
         selected_dd_type = request.form.get('dd_type')
         selected_dd_time_frame = request.form.get('dd_time_frame')
         selected_dd_sort = request.form.get('dd_sort')
