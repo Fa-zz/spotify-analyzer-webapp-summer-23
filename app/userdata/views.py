@@ -97,30 +97,19 @@ def profile():
             string += f" Sorted by {selected_dd_sort.capitalize()}."
         string += " Hover for a link to Spotify"
 
-        display = True
-
-        response_data = {
-            'string': string,
-            'selected_dd_type': selected_dd_type,
-            'selected_dd_time_frame': selected_dd_time_frame,
-            'selected_dd_sort': selected_dd_sort,
-            'display': display,
-            'itemList': itemList,
-            'imgList': imgList,
-            'urlList': urlList
-        }
-
-        return jsonify(response_data)
+        content = render_template('userdata/profile_update.html',
+                               string=string,
+                               itemList=itemList,
+                               imgList=imgList,
+                               urlList=urlList)
+        return jsonify({'content': content})
     else:
         print("Form did not submit")
-        string = 'Feel free to customize the settings, then hit Submit.'
-        display = False
+        string_top = 'Customize the data using the dropdown menu.'
 
         return render_template('userdata/profile.html',
+                               string_top=string_top,
                                form=my_form,
-                               string=string,
-                               type=type,
                                user=spotify.me()['display_name'],
                                followers=spotify.me()['followers']['total'],
-                               display=display
                                )

@@ -1,0 +1,24 @@
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block page_content %}
+<h3 align="center">{{ string }}</h3>
+<br>
+<br>
+<div class="container">
+    <div class="row">
+        <div class="row">
+            {% for i in range(itemList|length) %}
+                <div class="col-md-4">
+                    <div class="artist-item">
+                        <img src="{{ imgList[i] }}" width="64" height="64">
+                        <h5>{{ loop.index }}.<a href="{{ urlList[i] }}" target="_blank" title="Opens Spotify in a new tab"> {{ itemList[i] }}</a></h5>
+                    </div>
+                </div>
+                {% if loop.index % 3 == 0 %}
+                    </div><div class="row">
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -6,10 +6,7 @@ DD_TIME_FRAME_CHOICES = [('short_term', 'Four weeks'), ('medium_term', 'Six mont
 DD_SORT_CHOICES = [('your listens', 'Listens'), ('popularity', 'Popularity')]
 
 class DropdownForm(FlaskForm):
-    dd_type = SelectField('Type', choices=DD_TYPE_CHOICES)
+    dd_type = SelectField('Type', choices=DD_TYPE_CHOICES, default=None)
     # dd_number = SelectField('# to Display', choices=DD_NUMBER_CHOICES)
-    dd_time_frame = SelectField('Of the past...', choices=DD_TIME_FRAME_CHOICES)
-    dd_sort = SelectField('Sort by', choices=DD_SORT_CHOICES)
-
-    def get_choice_label(self, choices, value):
-        return dict(choices).get(value, 'Unknown')
+    dd_time_frame = SelectField('Of the past...', choices=DD_TIME_FRAME_CHOICES, default=None)
+    dd_sort = SelectField('Sort by', choices=DD_SORT_CHOICES, default=None)

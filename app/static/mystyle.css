@@ -19,6 +19,10 @@
     margin-right: 30px;
 }
 
+.welcome-user-top h1, h3 {
+    display: inline !important;
+}
+
 .artist-item {
     display: flex;
     align-items: center;
