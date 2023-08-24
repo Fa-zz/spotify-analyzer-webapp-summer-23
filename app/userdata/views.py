@@ -5,6 +5,20 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
 
+def count_genres(full_list):
+    genres_counted = {}
+    for artist in full_list:
+        genres_list = artist['genres']
+
+        for genre in genres_list:
+            if genre not in genres_counted:
+                genres_counted[genre] = 1
+            else:
+                genres_counted[genre] += 1
+
+    return genres_counted
+
+
 def split_into_lists(full_list):
     item_list = []
     img_list = []
@@ -29,7 +43,8 @@ def top_data_clean(data, sort_by, type):
             artist_dict = {'name': name,
                            'popularity': item['popularity'],
                            'spotify_url': item['external_urls']['spotify'],
-                           'img_url': item['images'][2]['url']
+                           'img_url': item['images'][2]['url'],
+                           'genres': item['genres']
                            }
             full_list.append(artist_dict)
 
@@ -65,10 +80,12 @@ def profile():
     if request.method == 'POST' and \
             ('none' not in request.form.get('dd_type') and 'none' not in request.form.get(
                 'dd_time_frame') and 'none' not in request.form.get('dd_sort')):
+        # User selections on each dropdown
         selected_dd_type = request.form.get('dd_type')
         selected_dd_time_frame = request.form.get('dd_time_frame')
         selected_dd_sort = request.form.get('dd_sort')
 
+        # String configuration
         if selected_dd_time_frame == 'short_term':
             time_frame = 'Four Weeks'
         elif selected_dd_time_frame == 'medium_term':
@@ -81,6 +98,7 @@ def profile():
         if time_frame != "All time":
             time_frame = " the Past " + time_frame
 
+        # Obtain and clean top data
         if selected_dd_type == 'artists':
             results = spotify.current_user_top_artists(time_range=selected_dd_time_frame, limit=50)
         else:
@@ -89,6 +107,13 @@ def profile():
         full_list = top_data_clean(results, selected_dd_sort, selected_dd_type)
 
         print(full_list)  # Obtains each artist
+
+        # If artist, obtain and count genres
+        # TODO: Genre dropdown only visible when viewing artists, only
+        if selected_dd_type == 'artists':
+            genres_counted = count_genres(full_list)
+            print(genres_counted)
+
         item_list, img_list, url_list = split_into_lists(full_list)
 
         # Prepare string
@@ -97,7 +122,6 @@ def profile():
             string += " Sorted by Your Listens."
         else:
             string += f" Sorted by {selected_dd_sort.capitalize()}."
-        string += " Hover for a link to Spotify"
 
         content = render_template('userdata/profile_update.html',
                                   string=string,

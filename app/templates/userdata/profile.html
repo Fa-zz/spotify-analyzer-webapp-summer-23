@@ -5,6 +5,8 @@
 
 {% block page_content %}
 
+<div id="dd-vars" data-url="{{ url_for('userdata.profile') }}"></div>
+
 <div class="welcome-user-top">
     <h1>Hello, {{ user }} 😎 </h1><h3>{% if followers == 0 %}You have no followers yet{% elif followers == 1 %}You have 1 follower{% else %}Congrats on the {{ followers }} followers!{% endif %}</h3>
 </div>
@@ -36,29 +38,5 @@
 
 {% block scripts %}
 {{ super() }}
-<script>
-    $(document).ready(function() {
-        $('#dd-type, #dd-time-frame, #dd-sort').change(function() {
-            const ddType = $('#dd-type').val();
-            const ddTimeFrame = $('#dd-time-frame').val();
-            const ddSort = $('#dd-sort').val();
-
-            $.ajax({
-                url: '{{ url_for('userdata.profile') }}',  // Update this URL to your route
-                method: 'POST',
-                data: {
-                    dd_type: ddType,
-                    dd_time_frame: ddTimeFrame,
-                    dd_sort: ddSort
-                },
-            success: function(data) {
-                $('#content').html(data.content);
-            },
-            error: function(error) {
-                    console.error('Error:', error);
-                }
-            });
-        });
-    });
-</script>
+    <script src="{{ url_for('static', filename='dropdown.js') }}"></script>
 {% endblock %}

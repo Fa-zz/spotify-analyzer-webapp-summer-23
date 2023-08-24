@@ -40,10 +40,10 @@
 
 .artist-item a {
     color: black; /* Change the link color to black */
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .artist-item a:hover {
     cursor: pointer;
-    text-decoration: underline;
+    text-decoration: none;
 }
