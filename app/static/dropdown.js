@@ -1,3 +1,7 @@
+function getVar(vars) {
+    return vars
+}
+
 $(document).ready(function() {
     $('#dd-type, #dd-time-frame, #dd-sort').change(function() {
         const ddType = $('#dd-type').val();
@@ -16,6 +20,58 @@ $(document).ready(function() {
             },
             success: function(data) {
                 $('#content').html(data.content);
+                displayGraph = data.displayGraph;
+                var genreList = data.genreList;
+                var genreCounts = data.genreCounts;
+                var genreColors = data.genreColors;
+                console.log(displayGraph, genreList, genreCounts, genreColors);
+
+                // Only create the chart if displayGraph is true
+                if (displayGraph) {
+                    var chartData = {
+                        labels: genreList,
+                        datasets: [{
+                            label: '# of artists',
+                            backgroundColor: genreColors,
+                            borderColor: 'black',
+                            borderWidth: 1,
+                            data: genreCounts,
+                            barPercentage: 1, // Adjust the bar width here
+                            categoryPercentage: 1 // Adjust the category width here
+                        }]
+                    };
+
+                    const ctx = document.getElementById('bar-chart').getContext('2d');
+
+                    // Check if a chart instance exists for the canvas
+                    const existingChart = Chart.getChart(ctx);
+                    if (existingChart) {
+                        existingChart.destroy(); // Destroy the existing chart
+                    }
+
+                    const barChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: chartData,
+                        options: {
+                            maintainAspectRatio: true,
+                            responsive: true,
+                            scales: {
+                              x: {
+                                ticks: {
+                                  autoSkip: false,
+                                  maxRotation: 60, // Rotate labels for better visibility
+                                  minRotation: 0 // Rotate labels for better visibility
+                                },
+                              },
+                              y: {
+                                  ticks: {
+                                      beginAtZero: false
+                                  }
+                              }
+                            },
+                        }
+                    });
+                }
             },
             error: function(error) {
                 console.error('Error:', error);

@@ -9,7 +9,7 @@ import spotipy
 def index():
     cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
     auth_manager = spotipy.oauth2.SpotifyOAuth(scope=current_app.config['SCOPE'],
-                                               redirect_uri=current_app.config['REDIRECT_URI'],
+                                               redirect_uri=current_app.config['SPOTIPY_REDIRECT_URI'],
                                                cache_handler=cache_handler,
                                                show_dialog=True)
     if request.args.get("code"):
@@ -19,10 +19,12 @@ def index():
 
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         # Step 1. Display sign in link when no token
+        session.clear()
         auth_url = auth_manager.get_authorize_url()
         return render_template('index.html', auth_url=auth_url)
 
     # Step 3. Signed in, display data
+    session['display_graph'] = False
     return redirect(url_for('userdata.profile'))
 
 # @main.route('/callback', methods=['GET', 'POST'])

@@ -3,6 +3,22 @@ from .forms import DropdownForm
 from . import userdata
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+import random
+
+
+def create_colors(genre_list):
+    genre_colors = []
+    all_colors = [
+        "#025669", "#7FB5B5", "#008F39", "#721422", "#F44611", "#606E8C", "#20214F", "#316650",
+        "#F5D033", "#D95030", "#5E2129", "#E5BE01", "#84C3BE", "#7D7F7D", "#922B3E", "#A98307",
+        "#F4A900", "#AF2B1E", "#00BB2D", "#1E213D", "#9D9101", "#C51D34", "#1E2460", "#308446",
+        "#E63244", "#DC9D00", "#13f2d2", "#6C4675", "#FFA420", "#DE4C8A", "#ed4f25", "#EAE6CA",
+        "#F3A505", "#8B8C7A", "#FFFF00", "#2A6478", "#3E5F8A", "#C6A664", "#4C9141", "#2E3A23"
+    ]
+    for genre in genre_list:
+        genre_colors.append(random.choice(all_colors))
+    genre_colors.append(random.choice(all_colors))
+    return genre_colors
 
 
 def count_genres(full_list):
@@ -66,6 +82,30 @@ def top_data_clean(data, sort_by, type):
     return full_list
 
 
+def string_config(selected_dd_type, selected_dd_time_frame, selected_dd_sort):
+    # String configuration
+    if selected_dd_time_frame == 'short_term':
+        time_frame = 'Four Weeks'
+    elif selected_dd_time_frame == 'medium_term':
+        time_frame = 'Six Months'
+    elif selected_dd_time_frame == 'long_term':
+        time_frame = 'All time'
+    else:
+        time_frame = 'short_term'
+
+    if time_frame != "All time":
+        time_frame = " the Past " + time_frame
+
+    # Prepare string
+    string = f"Your Most Streamed {selected_dd_type.capitalize()} of {time_frame}."
+    if selected_dd_sort == "unsorted":
+        string += " Sorted by Your Listens."
+    else:
+        string += f" Sorted by {selected_dd_sort.capitalize()}."
+
+    return string
+
+
 @userdata.route('/profile', methods=['GET', 'POST'])
 def profile():
     client_credentials_manager = SpotifyClientCredentials()
@@ -77,6 +117,7 @@ def profile():
 
     my_form = DropdownForm()
 
+    # TODO: Once dropdown for recommendations exists, check for this and pass to AJAX call.
     if request.method == 'POST' and \
             ('none' not in request.form.get('dd_type') and 'none' not in request.form.get(
                 'dd_time_frame') and 'none' not in request.form.get('dd_sort')):
@@ -84,19 +125,6 @@ def profile():
         selected_dd_type = request.form.get('dd_type')
         selected_dd_time_frame = request.form.get('dd_time_frame')
         selected_dd_sort = request.form.get('dd_sort')
-
-        # String configuration
-        if selected_dd_time_frame == 'short_term':
-            time_frame = 'Four Weeks'
-        elif selected_dd_time_frame == 'medium_term':
-            time_frame = 'Six Months'
-        elif selected_dd_time_frame == 'long_term':
-            time_frame = 'All time'
-        else:
-            time_frame = 'short_term'
-
-        if time_frame != "All time":
-            time_frame = " the Past " + time_frame
 
         # Obtain and clean top data
         if selected_dd_type == 'artists':
@@ -106,29 +134,46 @@ def profile():
 
         full_list = top_data_clean(results, selected_dd_sort, selected_dd_type)
 
-        print(full_list)  # Obtains each artist
-
-        # If artist, obtain and count genres
-        # TODO: Genre dropdown only visible when viewing artists, only
-        if selected_dd_type == 'artists':
-            genres_counted = count_genres(full_list)
-            print(genres_counted)
-
+        # print(full_list)  # Obtains each artist
         item_list, img_list, url_list = split_into_lists(full_list)
 
-        # Prepare string
-        string = f"Your Most Streamed {selected_dd_type.capitalize()} of {time_frame}."
-        if selected_dd_sort == "unsorted":
-            string += " Sorted by Your Listens."
-        else:
-            string += f" Sorted by {selected_dd_sort.capitalize()}."
+        # If artist, obtain and count genres
+        if selected_dd_type == 'artists' and not session['display_graph']:
+            genres_counted = count_genres(full_list)
+            # Split genre list, number of each, and colors for each genre into lists
+            session['genre_list'] = list(genres_counted.keys())
+            session['genre_counts'] = list(genres_counted.values())
+            session['genre_colors'] = create_colors(session['genre_list'])
+            session['display_graph'] = True
+            print(session['genre_list'], session['genre_counts'], session['genre_colors'])
 
-        content = render_template('userdata/profile_update.html',
-                                  string=string,
+        content = render_template('userdata/profile_top_update.html',
+                                  string=string_config(selected_dd_type, selected_dd_time_frame, selected_dd_sort),
                                   item_list=item_list,
                                   img_list=img_list,
-                                  url_list=url_list)
-        return jsonify({'content': content})
+                                  url_list=url_list,
+                                  )
+
+        if session['display_graph']:
+            response_data = {
+                'content': content,
+                'displayGraph': session['display_graph'],
+                'genreList': session['genre_list'],
+                'genreCounts': session['genre_counts'],
+                'genreColors': session['genre_colors']
+            }
+        # TODO: Append 'recommend' to dictionary if it exists
+        else:
+            response_data = {
+                'content': content,
+                'displayGraph': [],
+                'genreList': [],
+                'genreCounts': [],
+                'genreColors': []
+            }
+
+        return jsonify(response_data)
+
     else:
         print("Form did not submit")
         string_top = 'Customize the data using the dropdown menu.'
@@ -137,5 +182,5 @@ def profile():
                                string_top=string_top,
                                form=my_form,
                                user=spotify.me()['display_name'],
-                               followers=spotify.me()['followers']['total'],
+                               followers=spotify.me()['followers']['total']
                                )

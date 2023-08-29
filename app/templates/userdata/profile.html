@@ -34,9 +34,20 @@
 
 <br>
 <div id="content"></div>
+
+<br>
+<div class="chartBox">
+    <h1>Your Favorite Genres</h1>
+    <div>
+        <canvas id="bar-chart"></canvas>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
+    <script>
+        var displayGraph = false;
+    </script>
     <script src="{{ url_for('static', filename='dropdown.js') }}"></script>
 {% endblock %}
