@@ -33,15 +33,16 @@ $(document).ready(function() {
                         datasets: [{
                             label: '# of artists',
                             backgroundColor: genreColors,
-                            borderColor: 'black',
-                            borderWidth: 1,
+//                            borderColor: 'black',
+//                            borderWidth: 1,
                             data: genreCounts,
-                            barPercentage: 1, // Adjust the bar width here
-                            categoryPercentage: 1 // Adjust the category width here
+                            hoverOffset: 5
+//                            barPercentage: 1, // Adjust the bar width here
+//                            categoryPercentage: 1 // Adjust the category width here
                         }]
                     };
 
-                    const ctx = document.getElementById('bar-chart').getContext('2d');
+                    const ctx = document.getElementById('pie-chart').getContext('2d');
 
                     // Check if a chart instance exists for the canvas
                     const existingChart = Chart.getChart(ctx);
@@ -49,33 +50,24 @@ $(document).ready(function() {
                         existingChart.destroy(); // Destroy the existing chart
                     }
 
-                    const barChart = new Chart(ctx, {
-                        type: 'bar',
+                    var chartId = new Chart(ctx, {
+                        type: 'pie',
                         data: chartData,
                         options: {
-                            maintainAspectRatio: true,
-                            responsive: true,
-                            scales: {
-                              x: {
-                                ticks: {
-                                  autoSkip: false,
-                                  maxRotation: 60, // Rotate labels for better visibility
-                                  minRotation: 0 // Rotate labels for better visibility
+                            responsive: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
                                 },
-                              },
-                              y: {
-                                  ticks: {
-                                      beginAtZero: false
-                                  }
-                              }
-                            },
-                        }
+                                tooltip: {
+                                    titleFontSize: 16, // Adjust the title font size
+                                    bodyFontSize: 14, // Adjust the body font size
+                                }
+                            }
+                        },
                     });
                 }
             },
-            error: function(error) {
-                console.error('Error:', error);
-            }
         });
     });
 });

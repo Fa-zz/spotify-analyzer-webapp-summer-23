@@ -138,13 +138,15 @@ def profile():
         item_list, img_list, url_list = split_into_lists(full_list)
 
         # If artist, obtain and count genres
-        if selected_dd_type == 'artists' and not session['display_graph']:
+        if selected_dd_type == 'artists' and not session['display_graph'] or \
+                not(session['time'] == selected_dd_time_frame):
             genres_counted = count_genres(full_list)
             # Split genre list, number of each, and colors for each genre into lists
             session['genre_list'] = list(genres_counted.keys())
             session['genre_counts'] = list(genres_counted.values())
             session['genre_colors'] = create_colors(session['genre_list'])
             session['display_graph'] = True
+            session['time'] = selected_dd_time_frame
             print(session['genre_list'], session['genre_counts'], session['genre_colors'])
 
         content = render_template('userdata/profile_top_update.html',

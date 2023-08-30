@@ -25,6 +25,7 @@ def index():
 
     # Step 3. Signed in, display data
     session['display_graph'] = False
+    session['time'] = False
     return redirect(url_for('userdata.profile'))
 
 # @main.route('/callback', methods=['GET', 'POST'])
